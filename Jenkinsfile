@@ -4,6 +4,7 @@ pipeline {
          tools {
         maven 'maven'  // Ensure this matches the name in Global Tool Configuration
     }
+
     stages {
         stage('Clone Repository') {
             steps {
