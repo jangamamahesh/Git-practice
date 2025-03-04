@@ -1,8 +1,12 @@
 pipeline {
     agent any
 
-         tools {
-        maven 'maven'  // Ensure this matches the name in Global Tool Configuration
+    environment {
+        DOCKER_IMAGE = "jangamamahesh/my-java-app:latest"
+    }
+
+    tools {
+        maven 'maven'   // Ensure Maven is installed in Jenkins Global Tool Configuration
     }
 
     stages {
@@ -12,15 +16,25 @@ pipeline {
             }
         }
 
-        stage('Build') {
+        stage('Build & Test') {
             steps {
                 sh 'mvn clean package'
+                sh 'mvn test'
             }
         }
 
-        stage('Test') {
+        stage('Build Docker Image') {
             steps {
-                sh 'mvn test'
+                sh 'docker build -t $DOCKER_IMAGE .'
+            }
+        }
+
+        stage('Push Docker Image to Docker Hub') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+                    sh 'docker push $DOCKER_IMAGE'
+                }
             }
         }
 
@@ -28,6 +42,15 @@ pipeline {
             steps {
                 echo 'Deploying the application...'
             }
+        }
+    }  // Closing brace for 'stages'
+
+    post {
+        success {
+            echo "🚀 Deployment Successful!"
+        }
+        failure {
+            echo "❌ Deployment Failed!"
         }
     }
 }
