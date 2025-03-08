@@ -8,7 +8,7 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                git branch: 'main', url: 'https://github.com/AishwaryaK515/Tools-practice-repo.git'
+                git branch: 'main', url: 'https://github.com/jangamamahesh/Git-practice.git'
             }
         }
 
