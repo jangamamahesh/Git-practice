@@ -1,56 +1,35 @@
 pipeline {
     agent any
 
-    environment {
-        DOCKER_IMAGE = "jangamamahesh/my-java-app:latest"
-    }
-
-    tools {
-        maven 'maven'   // Ensure Maven is installed in Jenkins Global Tool Configuration
+      environment {
+        PATH = "/usr/share/maven/bin:$PATH"  // Use system-installed Maven
     }
 
     stages {
         stage('Clone Repository') {
             steps {
-                git branch: 'master', url: 'https://github.com/jangamamahesh/Git-practice.git'
+                git branch: 'main', url: 'https://github.com/AishwaryaK515/Tools-practice-repo.git'
             }
         }
 
-        stage('Build & Test') {
+        stage('Build') {
             steps {
+                sh 'echo "Using Maven version:"'
+                sh 'mvn --version'  // Debugging step to verify Maven path
                 sh 'mvn clean package'
+            }
+        }
+
+        stage('Test') {
+            steps {
                 sh 'mvn test'
-            }
-        }
-
-        stage('Build Docker Image') {
-            steps {
-                sh 'docker build -t $DOCKER_IMAGE .'
-            }
-        }
-
-        stage('Push Docker Image to Docker Hub') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
-                    sh 'docker push $DOCKER_IMAGE'
-                }
             }
         }
 
         stage('Deploy') {
             steps {
-                echo 'Deploying the application...'
+                echo "Deploying the application..."
             }
-        }
-    }  // Closing brace for 'stages'
-
-    post {
-        success {
-            echo "🚀 Deployment Successful!"
-        }
-        failure {
-            echo "❌ Deployment Failed!"
         }
     }
 }
